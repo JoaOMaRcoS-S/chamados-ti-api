@@ -84,6 +84,45 @@ Sem paginação. GET /chamados retorna todos os registros. Com volume real, seri
 
 Sem DTO de saída. As respostas serializam a entidade diretamente, o que acopla o contrato da API ao modelo de persistência: qualquer alteração na entidade muda a resposta para os clientes.
 
+## Testes
+
+Testes unitários do `ChamadoService`, escritos com **JUnit 5** e **Mockito**.
+
+O `ChamadoRepository` é substituído por um mock, então os testes **não precisam do PostgreSQL** ligado nem do banco criado.
+
+### O que é testado
+
+| Teste | Cenário | O que confere |
+|---|---|---|
+| `deveFecharChamadoAberto` | Fechar um chamado que está aberto | Status passa a `FECHADO`, data de fechamento é preenchida e o chamado é salvo |
+| `deveLancarExcecaoAoFecharChamadoJaFechado` | Tentar fechar um chamado já fechado | Lança `ChamadoJaFechadoException` e não salva o chamado uma segunda vez |
+
+### Validação dos testes
+
+Cada teste foi validado introduzindo um bug proposital no `ChamadoService` e confirmando que ele falha:
+
+- **Removendo o `save`**: os dois testes falham. Sem a verificação do `save`, o teste do caminho feliz passaria mesmo com o chamado nunca sendo gravado, porque o objeto é alterado em memória.
+- **Removendo a regra de "já fechado"**: o teste do caminho de erro falha.
+
+### Como rodar
+
+Pelo terminal, na raiz do projeto:
+
+```bash
+./mvnw test      # Linux / Mac
+.\mvnw test      # Windows
+```
+
+Pela IDE: botão direito em `ChamadoServiceTest` → Run As → JUnit Test.
+
+### Não coberto
+
+- `registrarChamado`, `listarTodos` e `listarAbertos`
+- Controller e códigos HTTP
+- Teste de integração com o banco
+
+
 Autor
 
 João Marcos —
+
